@@ -1,0 +1,41 @@
+{
+  "name": "epluginize",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "description": "Convenient event-based plugin system for NodeJS projects",
+  "scripts": {
+    "compile": "./node_modules/.bin/babel -q -b regenerator -D --out-dir dist src",
+    "start": "./node_modules/.bin/babel-node src/app.js",
+    "watch": "./node_modules/.bin/nodemon -w src -x ./node_modules/.bin/babel-node src/app.js",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dsalin/epluginize.git"
+  },
+  "keywords": [
+    "events",
+    "plugin",
+    "server"
+  ],
+  "bugs": {
+    "url": "https://github.com/dsalin/epluginize/issues"
+  },
+  "homepage": "https://github.com/dsalin/epluginize",
+  "dependencies": {
+    "bluebird": "^3.4.6",
+    "chalk": "^1.1.3",
+    "lodash": "^4.16.4"
+  },
+  "devDependencies": {
+    "babel-cli": "6.11.4",
+    "babel-core": "6.13.2",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-es2017": "^6.16.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "chai": "3.5.0",
+    "joi": "^8.4.2"
+  }
+}
