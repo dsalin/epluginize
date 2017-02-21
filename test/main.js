@@ -3,10 +3,57 @@ var chai = require('chai')
 var EPL = require('../dist/index')
 var should = chai.should()
 
-describe('Blobs', function() {
-  it('should list ALL blobs on /blobs GET')
-  it('should list a SINGLE blob on /blob/<id> GET')
-  it('should add a SINGLE blob on /blobs POST')
-  it('should update a SINGLE blob on /blob/<id> PUT')
-  it('should delete a SINGLE blob on /blob/<id> DELETE')
+describe('Simple without AutoRegister', function() {
+  describe('Plugin Construction', function() {
+  })
+
+  describe('Register Events', function() {
+  })
+
+  describe('Check results after emitting', function() {
+  })
+})
+
+describe('Simple with AutoRegister', function() {
+  describe('Plugin Construction', function() {
+  })
+
+  describe('Register Events', function() {
+  })
+
+  describe('Check results after emitting', function() {
+  })
+})
+
+describe('Without AutoRegister with Advanced settings', function() {
+  describe('Plugin Construction', function() {
+  })
+
+  describe('Register Advanced Event handler', function() {
+  })
+
+  describe('Check results after emitting', function() {
+  })
+})
+
+describe('AutoRegister with Advanced settings', function() {
+  describe('Plugin Construction', function() {
+  })
+
+  describe('Register Events', function() {
+  })
+
+  describe('Check results after emitting', function() {
+  })
+})
+
+describe('Advanced test with multiple plugins', function() {
+  describe('Plugin Construction', function() {
+  })
+
+  describe('Register Events', function() {
+  })
+
+  describe('Check results after emitting', function() {
+  })
 })

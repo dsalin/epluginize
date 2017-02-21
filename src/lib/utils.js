@@ -11,7 +11,6 @@ const wrapPossibleError = func => ( ...params ) => {
   try {
     return func.apply(this, params)
   } catch (err) {
-    // console.log(chalk.red("ERROR: "), err)
     return err
   }
 }
