@@ -8,17 +8,23 @@
 */
 
 import _ from 'lodash'
+import PluginManager from './PluginManager.class'
 import PluginAction from './PluginAction.class'
+import EventEmitter from './EventEmitter.class'
 
-class Plugin {
+class Plugin extends EventEmitter {
   constructor( name ) {
-    this.name = name
+    super(name)
+
     this.actions = {
       // actions applied to all events
       __all__: [],
       // actions applied to event emitters filtered by RegExp
       __regx__: []
     }
+
+    if ( Plugin.__autoRegister__ && Plugin.PluginManager )
+      Plugin.PluginManager.addPlugin(this)
   }
 
   /**
@@ -35,11 +41,19 @@ class Plugin {
   *   Action handler
   */
   on( eventType, emitterFilter, func ) {
+    // EventEmitter register event
+    if ( arguments.length === 2 ) {
+      super.on(arguments[0], arguments[1])
+      return this
+    }
+
     const action = new PluginAction(eventType, emitterFilter, func)
+    let type = emitterFilter
 
     // check all types and type combinations
     if ( eventType === '*' && emitterFilter === '*' ) {
       this.all(action)
+      type = '__all__'
     }
     else if ( _.isString(emitterFilter) ) {
       if ( !this.actions[emitterFilter] ) this.actions[emitterFilter] = []
@@ -53,7 +67,13 @@ class Plugin {
     } 
     else if ( _.isRegExp(emitterFilter) ) {
       this.actions.__regx__.push(action)
+      type = '__regx__'
     } 
+
+    // autoregister Plugin
+    if ( Plugin.autoRegister && Plugin.pluginManager ) {
+      Plugin.pluginManager.autoRegisterAction(type, action, this)
+    }
 
     return this
   }
@@ -69,6 +89,24 @@ class Plugin {
     const action = new PluginAction('*', '*', func)
     return this.all(action)
   }
+
+  static autoRegister() {
+    /**
+    * Create shared PluginManager
+    * to be used with all instances of Plugin Class.
+    * 
+    * Note: this is done since no explicit calls to PluginManager
+    * are made with autoRegister option enabled. Therefore, a mechanism
+    * of sharing PluginManager instance should be established.
+    */
+    Plugin.pluginManager = new PluginManager([], null, true)
+    Plugin.__autoRegister__ = true
+  }
 }
+
+// Indicates whether Plugins should automatically
+// register themselves on construction, or wait for
+// a global PluginManager.registerPlugins method to be called
+Plugin.__autoRegister__ = false
 
 export default Plugin

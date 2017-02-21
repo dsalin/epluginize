@@ -3,9 +3,11 @@
 *
 * @namespace/singleton
 */
+import events from 'events'
 
-class EventsManager {
+class EventsManager extends events.EventEmitter {
   constructor() {
+    super()
     this.events = {}
     this.emitters = {}
   }
@@ -24,6 +26,7 @@ class EventsManager {
       console.log('Emitter with that name already exists, OVERRIDING ...')
     }
     this.emitters[emitter.name] = emitter
+    this.emit('Emitter/Registered', emitter)
   }
 
   // Checks whether the event is already
@@ -57,6 +60,7 @@ class EventsManager {
       this.events[eventEmitter.name] = {}
 
     this.events[eventEmitter.name][title] = eventEmitter
+    this.emit('Event/Registered', title, eventEmitter)
     return true
   }
 }

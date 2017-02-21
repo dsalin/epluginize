@@ -20,13 +20,15 @@ class EventEmitter extends events.EventEmitter {
     super()
     this.name = name
     this.events = []
+    // for speeding up the search
+    this.__events__ = {}
     this.registerSelf()
   }
 
   // checks whether a particular event can be fired
   // by this EventEmitter
   canEmit( title ) {
-    return this.events.indexOf(title) >= 0
+    return !!this.__events__[title]
   }
 
   registerSelf() {
@@ -36,12 +38,20 @@ class EventEmitter extends events.EventEmitter {
   registerEvent( title ) {
     // push event title to events list only if EventsManager
     // accepts the event and varifies that no collisions exist
-    if ( EventsManager.registerEvent(title, this) ) {
+    // pushing to events list is done 
+    if ( !EventsManager.eventIsRegistered(title, this.name) ) {
       this.events.push(title)
+      this.__events__[title] = true
+      EventsManager.registerEvent(title, this)
+
       return true
     }
 
     return false
+  }
+
+  registerEvents( enames ) {
+    enames.forEach(e => this.registerEvent(e))
   }
 
   limitListenersTo( limit ) {

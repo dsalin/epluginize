@@ -8,9 +8,17 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _events = require('events');
 
 var _events2 = _interopRequireDefault(_events);
+
+var _chalk = require('chalk');
+
+var _chalk2 = _interopRequireDefault(_chalk);
 
 var _EventsManager = require('./EventsManager.single');
 
@@ -46,6 +54,8 @@ var EventEmitter = function (_events$EventEmitter) {
 
     _this.name = name;
     _this.events = [];
+    // for speeding up the search
+    _this.__events__ = {};
     _this.registerSelf();
     return _this;
   }
@@ -57,7 +67,7 @@ var EventEmitter = function (_events$EventEmitter) {
   _createClass(EventEmitter, [{
     key: 'canEmit',
     value: function canEmit(title) {
-      return this.events.indexOf(title) >= 0;
+      return !!this.__events__[title];
     }
   }, {
     key: 'registerSelf',
@@ -69,12 +79,25 @@ var EventEmitter = function (_events$EventEmitter) {
     value: function registerEvent(title) {
       // push event title to events list only if EventsManager
       // accepts the event and varifies that no collisions exist
-      if (_EventsManager2.default.registerEvent(title, this)) {
+      // pushing to events list is done 
+      if (!_EventsManager2.default.eventIsRegistered(title, this.name)) {
         this.events.push(title);
+        this.__events__[title] = true;
+        _EventsManager2.default.registerEvent(title, this);
+
         return true;
       }
 
       return false;
+    }
+  }, {
+    key: 'registerEvents',
+    value: function registerEvents(enames) {
+      var _this2 = this;
+
+      enames.forEach(function (e) {
+        return _this2.registerEvent(e);
+      });
     }
   }, {
     key: 'limitListenersTo',
@@ -100,14 +123,14 @@ var EventEmitter = function (_events$EventEmitter) {
   }, {
     key: 'emitAsync',
     value: function emitAsync() {
-      var _this2 = this;
+      var _this3 = this;
 
       for (var _len2 = arguments.length, params = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         params[_key2] = arguments[_key2];
       }
 
       if (!this.canEmit(params[0])) throw new Error('You cannot emit unregistered event');else setImmediate(function () {
-        return _get(EventEmitter.prototype.__proto__ || Object.getPrototypeOf(EventEmitter.prototype), 'emit', _this2).apply(_this2, params);
+        return _get(EventEmitter.prototype.__proto__ || Object.getPrototypeOf(EventEmitter.prototype), 'emit', _this3).apply(_this3, params);
       });
     }
   }]);
