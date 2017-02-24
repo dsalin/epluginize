@@ -303,8 +303,7 @@ This decoupling simplifies the workflow and enables registering handlers for a l
 defined in above examples.
 
 
-`Plugin.prototype**.on(eventSelector, emitterSelector, handler)**`
-
+#### Plugin.prototype**.on(eventSelector, emitterSelector, handler)**
 Register handler for `eventSelector` events, emitted by `emitterSelector` emitters.
 
 **eventSelector** and **emitterSelector** can be a `String`, `Array` or a `RegEx` object.
@@ -321,39 +320,32 @@ Last two parameters can be useful for cases, when you register a handler for mul
 This helps distinguish between those, if needed.
 
 
-`Plugin.prototype**.onAll(handler)**`
-
+#### Plugin.prototype**.onAll(handler)**
 Register emitter for all events emitted by all event emitters.
 
 
-`Plugin**.mult([ names ])**`
-
+#### Plugin**.mult([ names ])**
 Create multiple Plugins with given array of names.
 
 
 ### EventEmitter
 
-`EventEmitter.prototype**.emit(eventName, params)**`
-
+#### EventEmitter.prototype**.emit(eventName, params)**
 Emit registered event with a given `name` with `params`.
 
-`EventEmitter.prototype**.emitAsync(eventName, params)**`
-
+#### EventEmitter.prototype**.emitAsync(eventName, params)**
 Emit registered event **asynchronously** with a given `name` with `params`.
 
 
-`EventEmitter.prototype**.registerEvent(eventName)**`
-
+#### EventEmitter.prototype**.registerEvent(eventName)**
 Register event with given name.
 
 
-`EventEmitter.prototype**.registerEvents([ eventNames ])**`
-
+#### EventEmitter.prototype**.registerEvents([ eventNames ])**
 Register events with given names.
 
 
-`EventEmitter**.mult([ names ])**`
-
+#### EventEmitter**.mult([ names ])**
 Create multiple EventEmitters with given array of names.
 
 ## Notes
