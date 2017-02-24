@@ -10,10 +10,6 @@
 
 import EPL from '../index.js'
 
-// configure to AutoRegister plugins
-// as they are constructed
-EPL.Plugin.autoRegister()
-
 // construct plugins
 const first = new EPL.Plugin('First')
 const second = new EPL.Plugin('Second')

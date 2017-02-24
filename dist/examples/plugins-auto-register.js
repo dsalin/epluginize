@@ -6,22 +6,17 @@ var _index2 = _interopRequireDefault(_index);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// configure to AutoRegister plugins
-// as they are constructed
-_index2.default.Plugin.autoRegister();
-
 // construct plugins
-/**
-* In EPluginize, usually EventEmitters are responsible
-* for emitting stuff, however, this is not the only option.
-* Plugin are just a subclass of EventEmitter, therefore,
-* everything that is possible with EventEmitter is possible
-* with Plugin.
-* 
-* @demo
-*/
+var first = new _index2.default.Plugin('First'); /**
+                                                 * In EPluginize, usually EventEmitters are responsible
+                                                 * for emitting stuff, however, this is not the only option.
+                                                 * Plugin are just a subclass of EventEmitter, therefore,
+                                                 * everything that is possible with EventEmitter is possible
+                                                 * with Plugin.
+                                                 * 
+                                                 * @demo
+                                                 */
 
-var first = new _index2.default.Plugin('First');
 var second = new _index2.default.Plugin('Second');
 // const main = new EPL.Plugin('Main')
 

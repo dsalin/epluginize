@@ -8,11 +8,7 @@ var _index2 = _interopRequireDefault(_index);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// configure to AutoRegister plugins as they are constructed
-_index2.default.Plugin.autoRegister();
-
 // create basic event emitters
-
 var _EPL$EventEmitter$mul = _index2.default.EventEmitter.mult(['E1', 'E2']),
     _EPL$EventEmitter$mul2 = _slicedToArray(_EPL$EventEmitter$mul, 2),
     E1 = _EPL$EventEmitter$mul2[0],

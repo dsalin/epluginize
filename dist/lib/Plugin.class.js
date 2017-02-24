@@ -123,6 +123,11 @@ var Plugin = function (_EventEmitter) {
     key: 'all',
     value: function all(action) {
       this.actions.__all__.push(action);
+
+      // autoregister Plugin
+      if (Plugin.autoRegister && Plugin.pluginManager) {
+        Plugin.pluginManager.autoRegisterAction('__all__', action, this);
+      }
     }
   }, {
     key: 'onAll',
@@ -164,5 +169,8 @@ var Plugin = function (_EventEmitter) {
 
 
 Plugin.__autoRegister__ = false;
+
+// set AutoRegister to be the default option
+Plugin.autoRegister();
 
 exports.default = Plugin;

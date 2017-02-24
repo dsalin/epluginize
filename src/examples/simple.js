@@ -48,8 +48,7 @@ simpleLogger.on(/Info/g, /Simple/g, data => {
 })
 
 // register all plugins
-new EPL.PluginManager([ simpleLogger, simpleSaver ], EPL.EventsManager)
+// new EPL.PluginManager([ simpleLogger, simpleSaver ], EPL.EventsManager)
 
 emitter.emit('Info Log', ' --- Log String', ' || Second')
 emitter.emit('Error Log', ' --- Error Log String')
-

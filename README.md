@@ -48,9 +48,6 @@ This gives more control, especially in huge projects.
 
 import EPL from 'epluginize'
 
-// configure to AutoRegister plugins as they are constructed
-EPL.Plugin.autoRegister()
-
 // create basic event emitters
 const sessionEmitter = new EPL.EventEmitter('Session')
 
@@ -89,9 +86,6 @@ by NodeJS. Therefore, in this section we will throw all the perks and see what h
 // src/examples/selectors.js
 
 import EPL from 'epluginize'
-
-// configure to AutoRegister plugins as they are constructed
-EPL.Plugin.autoRegister()
 
 // create basic event emitters
 const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
@@ -151,22 +145,12 @@ Plugin4 - Event /ed/ from /E/ matching emitters:  Emitter2
 
 ### Future Events and Emitters
 
-This is where the real fun (in my opinion) comes. Lets model some very simplified, but still real world example.
-Suppose you are doing a e-commerce web-site. Transactions going back and forward, new products are added and deleted and there is
-no sane way to know exactly what events other developers will register. However, you agreed on
-the data interface and the prefixing of those events. Therefore, you have 3 primary areas (again, very simplified) of events:
-`Payment`, `Product`, `Admin`. Each of those can have different emitters and events they emit. For example,
-`Product/Veiwed`, where `Product` is the name of the emitter and `Viewed` is the event.
-
 Here we register event handlers before we even know exactly
-what events will be available in the future
+what events will be available in the future.
 
 ```js
 // src/examples/future.js
 import EPL from 'epluginize'
-
-// configure to AutoRegister plugins as they are constructed
-EPL.Plugin.autoRegister()
 
 // create basic event emitters
 const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
@@ -177,12 +161,8 @@ const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
 // a couple more plugins to show the whole power of selectors
 const [ P1, P2, P3, P4 ] = EPL.Plugin.mult(['P1', 'P2', 'P3', 'P4'])
 
-// Here we register event handlers before we even know exactly
-// what events will be available in the future
-// 
 // For convenience, this refers to plugin object itself, so you don't
 // need to worry about those
-
 P1.on('*', 'E1', function (data, eventName, emitterName) {
   console.log(this.name, "Emitter1 :", data, ' | Emitter: ', emitterName, ' | Event:', eventName)
 })
@@ -200,6 +180,7 @@ P4.on(/ed/, /E/, function(data, eventName, emitterName) {
 })
 
 // register events after AFTER event handlers
+// this can be done in a separate file as well
 E1.registerEvents(['Initialized', 'Destroyed'])
 E2.registerEvents(['Initialized', 'Destroyed'])
 
@@ -225,6 +206,154 @@ P3 - Event from /E/:  Without Errors  | Emitter: E2  | Event: Destroyed
 P4 - Event /ed/ from /E/:  Without Errors  | Emitter: E2 Event: Destroyed
 ```
 
+Note that it does not matter where to define all of the above.
+Let's have an example for that as well:
+
+```js
+// src/examples/in-separate-files/plugins.js
+import EPL from 'epluginize'
+
+const [ P1, P2, P3, P4 ] = EPL.Plugin.mult(['P1', 'P2', 'P3', 'P4'])
+
+// For convenience, this refers to plugin object itself, so you don't
+// need to worry about those
+P1.on('*', 'E1', function (data, eventName, emitterName) {
+  console.log(this.name, "Emitter1 :", data, ' | Emitter: ', emitterName, ' | Event:', eventName)
+})
+
+P2.on('Initialized', '*', function(data, eventName, emitterName) {
+  console.log(this.name, "- All Emitters:", data, ' | Emitter: ', emitterName, ' | Event:', eventName)
+})
+
+P3.on(['Initialized', 'Destroyed'], /E/, function(data, eventName, emitterName) {
+  console.log(this.name, "- Event from /E/: ", data, ' | Emitter:', emitterName, ' | Event:', eventName)
+})
+
+P4.on(/ed/, /E/, function(data, eventName, emitterName) {
+  console.log(this.name, "- Event /ed/ from /E/: ", data, ' | Emitter:', emitterName, 'Event:', eventName)
+})
+
+```js
+// src/examples/in-separate-files/emitters.js
+import EPL from 'epluginize'
+
+// plugins file has to be executed somehow
+// that is why we import it here
+// you can use any other method to execute plugin code
+import plugins from './plugins'
+
+// create basic event emitters
+const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
+
+// register events after AFTER event handlers
+E1.registerEvents(['Initialized', 'Destroyed'])
+E2.registerEvents(['Initialized', 'Destroyed'])
+
+// Emit all the events
+E1.emit('Initialized', 'Some Data')
+E2.emit('Initialized', 'Some Other Data')
+E2.emit('Destroyed', 'Without Errors')
+```
+
+### Plugins as EventEmitters
+
+Plugins are also EventEmitters, therefore, you can ignore creating the latter altogether.
+
+```js
+// src/examples/plugins-as-emitters.js
+import EPL from 'epluginize'
+
+// construct plugins
+const first = new EPL.Plugin('First')
+const second = new EPL.Plugin('Second')
+const main = new EPL.Plugin('Main')
+
+first.registerEvent('Initialized')
+second.registerEvent('Initialized')
+
+second.on('Initialized', 'First', () => console.log("SECOND: First Plugin has initialized"))
+first.on('Initialized', 'Second', () => console.log("FIRST: Second Plugin has initialized"))
+main.onAll(pname => console.log(`MAIN: Plugin ${pname} has initialized`))
+
+first.emit('Initialized', 'First')
+second.emit('Initialized', 'Second')
+```
+
+You should see this output:
+```bash
+# Output
+
+SECOND: First Plugin has initialized
+MAIN: Plugin First has initialized
+FIRST: Second Plugin has initialized
+MAIN: Plugin Second has initialized
+```
+
 ## API Overview
+
+### Plugin
+The essential part of this package. Plugin is basically an EventEmitter with a collection
+of event handlers for other EventEmitters.
+
+In `EPluginize`, you don't register events on emitters that emit those events (as it is usually done).
+Instead, you register Emitters (Plugins or EventEmitters) and events that they can emit, later, you define
+your plugins that are responsible for handling those events, without touching event emitters directly.
+
+This decoupling simplifies the workflow and enables registering handlers for a lot of emitters using methods
+defined in above examples.
+
+
+`Plugin.prototype**.on(eventSelector, emitterSelector, handler)**`
+
+Register handler for `eventSelector` events, emitted by `emitterSelector` emitters.
+
+**eventSelector** and **emitterSelector** can be a `String`, `Array` or a `RegEx` object.
+
+Note: when using `String` to define above parameters: `*` string denotes `all`.
+
+**func** is a function that takes:
+
+    - `arguments` - arguments that emitter passes when emits the event: (ex: `emitter.emit('event', data)`)
+    - `eventName` - `String` describing the name of the event being emitted
+    - `emitterName` - `String` describing the name of the event emitter that emits the event
+
+Last two parameters can be useful for cases, when you register a handler for multiple event emitters or multiple events.
+This helps distinguish between those, if needed.
+
+
+`Plugin.prototype**.onAll(handler)**`
+
+Register emitter for all events emitted by all event emitters.
+
+
+`Plugin**.mult([ names ])**`
+
+Create multiple Plugins with given array of names.
+
+
+### EventEmitter
+
+`EventEmitter.prototype**.emit(eventName, params)**`
+
+Emit registered event with a given `name` with `params`.
+
+`EventEmitter.prototype**.emitAsync(eventName, params)**`
+
+Emit registered event **asynchronously** with a given `name` with `params`.
+
+
+`EventEmitter.prototype**.registerEvent(eventName)**`
+
+Register event with given name.
+
+
+`EventEmitter.prototype**.registerEvents([ eventNames ])**`
+
+Register events with given names.
+
+
+`EventEmitter**.mult([ names ])**`
+
+Create multiple EventEmitters with given array of names.
 
 ## Notes

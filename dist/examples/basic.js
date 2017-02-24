@@ -6,9 +6,6 @@ var _index2 = _interopRequireDefault(_index);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// configure to AutoRegister plugins as they are constructed
-_index2.default.Plugin.autoRegister();
-
 // create basic event emitters
 var sessionEmitter = new _index2.default.EventEmitter('Session');
 

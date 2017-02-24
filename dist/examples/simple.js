@@ -54,7 +54,7 @@ simpleLogger.on(/Info/g, /Simple/g, function (data) {
 });
 
 // register all plugins
-new _index2.default.PluginManager([simpleLogger, simpleSaver], _index2.default.EventsManager);
+// new EPL.PluginManager([ simpleLogger, simpleSaver ], EPL.EventsManager)
 
 emitter.emit('Info Log', ' --- Log String', ' || Second');
 emitter.emit('Error Log', ' --- Error Log String');

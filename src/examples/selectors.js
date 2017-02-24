@@ -1,8 +1,5 @@
 import EPL from '../index.js'
 
-// configure to AutoRegister plugins as they are constructed
-EPL.Plugin.autoRegister()
-
 // create basic event emitters
 const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
 

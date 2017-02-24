@@ -91,6 +91,11 @@ class Plugin extends EventEmitter {
   // the order they were registered
   all( action ) {
     this.actions.__all__.push(action)
+
+    // autoregister Plugin
+    if ( Plugin.autoRegister && Plugin.pluginManager ) {
+      Plugin.pluginManager.autoRegisterAction('__all__', action, this)
+    }
   }
 
   onAll( func ) {
@@ -116,5 +121,8 @@ class Plugin extends EventEmitter {
 // register themselves on construction, or wait for
 // a global PluginManager.registerPlugins method to be called
 Plugin.__autoRegister__ = false
+
+// set AutoRegister to be the default option
+Plugin.autoRegister()
 
 export default Plugin
