@@ -27,6 +27,14 @@ class Plugin extends EventEmitter {
       Plugin.PluginManager.addPlugin(this)
   }
 
+  // Create multiple Plugins at once
+  static mult( pluginNames ) {
+    if ( !Array.isArray(pluginNames) )
+      throw new Error('Argument to `Plugin.mult` should be an Array')
+
+    return pluginNames.map(n => new Plugin(n))
+  }
+
   /**
   * Functions that define what actions to register
   * for what event emitter

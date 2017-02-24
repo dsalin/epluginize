@@ -109,8 +109,4 @@ aaa2.emit('REGX Second', 'REGX Second - AAASecond');
 
 aaa2.registerEvent('REGX First');
 aaa2.emit('REGX First', 'REGX First - AAASecond');
-
-// console.log(EPL.Plugin.pluginManager.eventsManager.getEmittersArray().forEach(
-//   e => console.log('Name: ', e.name, '\tEvents: ', e.eventNames())
-// ))
 //------------------------------------

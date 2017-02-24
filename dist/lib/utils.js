@@ -19,7 +19,6 @@ var wrapPossibleError = function wrapPossibleError(func) {
     try {
       return func.apply(undefined, params);
     } catch (err) {
-      // console.log(chalk.red("ERROR: "), err)
       return err;
     }
   };

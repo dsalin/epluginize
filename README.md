@@ -15,115 +15,216 @@ In this Guide, we will go from the most basic usage to the advanced techniques t
 npm i epluginize -S
 ```
 
+## Table of contents
+
+- [Important difference from standard Pub/Sub](#important-difference-from-standard-Pub/Sub)
+- [Basic Usage](#basic-usage)
+- [What You See is what You Get](#what-you-see-is-what-you-get)
+- [API Overview](#api-overview)
+- [Notes](#notes)
+
 ## Important difference from standard Pub/Sub
+
 `EPluginize` is using **Pub/Sub** logic, no question here. However, **the way you register** your handlers is different.
 With regular NodeJS EventEmitters, you actually need an EventEmitter object to attach your event handlers, one at a time.
 Furthermore, this EventEmitter should be defined before you can actually register anything. This introduces small (but still tedious)
 process to follow, especially when working with other developers.
 
-Therefore, `EPluginize` allows you to:
+Therefore, `EPluginize` mainly allows you to:
+
     - Register Event Handlers before you actually register EventEmitters, so that you don't ever need to worry about the correct order of those
     - Register Event Handlers for multiple EventEmitters and multiple events in one command
     - Register Event Handlers for Future Events (the ones that you dont know for sure), so your handlers start working just after new Event Type is registered
     - Register Plugin Events, where Plugins themselves can emit events with all the functionality described above
-    - etc.
 
-### Basic Usage (Really basic :P)
-Here we create 2 Plugins that listen for certain events from certain event emitters.
+## Basic Usage
+
+Here we create a Plugin that listens for 2 events from an event emitter and simply logs the results.
 **Important:** in EPluginize, **all events must be registered before emitted**.
 This gives more control, especially in huge projects.
 
 ```js
+// src/examples/basic.js
+
 import EPL from 'epluginize'
 
 // configure to AutoRegister plugins as they are constructed
-// more on this later
 EPL.Plugin.autoRegister()
 
 // create basic event emitters
 const sessionEmitter = new EPL.EventEmitter('Session')
-const fileEmitter = new EPL.EventEmitter('File')
 
-// register their events
+// register events
 sessionEmitter.registerEvents(['Initialized', 'Destroyed'])
-fileEmitter.registerEvents(['Initialized', 'Destroyed'])
 
 // create simple plugin
 const simpleLogger = new EPL.Plugin('Logger')
-const simpleSaver = new EPL.Plugin('Saver')
 
-// Listen for `Initialized` event from 'Session' emitter
-simpleLogger.on('Initialized', 'Session', data => {
-  console.log("SimpleLogger (Session Initialized): ", data)
-})
+// Listen for `Initialized` and 'Destroyed' events from 'Session' emitter
+simpleLogger.on(['Initialized', 'Destroyed'], 'Session', data => 
+  console.log("SimpleLogger (Session Initialized):", data)
+)
 
-// Listen for `Destroyed` event from 'File' emitter
-simpleSaver.on('Destroyed', 'File', data => {
-  console.log("SimpleSaver (File Destroyed): ", data)
-})
-
-// Listen for `Initialized` event from 'File' emitter
-simpleLogger.on('Initialized', 'File', data => {
-  console.log("SimpleLogger (File Initialized): ", data)
-})
-
-sessionEmitter.emit('Initialized')
-fileEmitter.emit('Destroyed')
+sessionEmitter.emit('Initialized', 'example.txt')
 ```
 
-As you can see here, we just create 2 EventEmitters and 2 Plugins that have different handlers attached to events.
+You should see this output:
 
-### Basic Usage with Advanced 
-Here we create 2 Plugins that listen for certain events from certain event emitters.
-**Important:** in EPluginize, **all events must be registered before emitted**.
-This gives more control, especially in huge projects.
+```bash
+# Output
+
+SimpleLogger (Session Initialized): example.txt
+```
+
+Pretty expected, now lets move to the fun part.
+
+## What You See is what You Get
+
+We've already covered the basic usage. Frankly, so far it made almost no difference from regular EventEmitters exposed
+by NodeJS. Therefore, in this section we will throw all the perks and see what happens.
+
+### Different Events/Emitter Selection
 
 ```js
+// src/examples/selectors.js
+
 import EPL from 'epluginize'
 
 // configure to AutoRegister plugins as they are constructed
-// more on this later
 EPL.Plugin.autoRegister()
 
 // create basic event emitters
-const sessionEmitter = new EPL.EventEmitter('Session')
-const fileEmitter = new EPL.EventEmitter('File')
+const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
 
 // register their events
-sessionEmitter.registerEvents(['Initialized', 'Destroyed'])
-fileEmitter.registerEvents(['Initialized', 'Destroyed'])
+E1.registerEvents(['Initialized', 'Destroyed'])
+E2.registerEvents(['Initialized', 'Destroyed'])
 
-// create simple plugin
-const simpleLogger = new EPL.Plugin('Logger')
-const simpleSaver = new EPL.Plugin('Saver')
+// create plugins
+// Note: in AutoRegister mode, plugins cannot have 
+// multiple handlers for the same events, that is why we create
+// a couple more plugins to show the whole power of selectors
+const [ P1, P2, P3, P4 ] = EPL.Plugin.mult(['P1', 'P2', 'P3', 'P4'])
 
-// Listen for all events from 'Session' emitter
-simpleLogger.on('*', 'Session', data => {
-  console.log("SimpleLogger (Session Initialized): ", data)
-})
+// Listen for all events from 'E1' emitter
+P1.on('*', 'E1', data => 
+  console.log("Plugin1 - Emitter1 :", data)
+)
 
-// Listen for `Initialized` and `Destroyed` events from 'File' emitter
-simpleSaver.on(['Initialized', 'Destroyed]', 'File', data => {
-  console.log("SimpleSaver (File Initialized or Destroyed): ", data)
-})
+// Listen for `Initialized` event from All emitters
+P2.on('Initialized', '*', data => 
+  console.log("Plugin2 - All Emitters:", data)
+)
 
-// Listen for `Initialized` and `Destroyed` events from 'File' and 'Session' emitters
-simpleSaver.on(['Initialized', 'Destroyed]', ['File', 'Session'], data => {
-  console.log("SimpleSaver (File Initialized or Destroyed): ", data)
-})
+// Did I say we can use RegEx?
+// Listen for `Initialized` and `Destroyed` events from emtters that match the RegEx
+// Tip: THAT COVERS EVENT EMITTERS CREATED IN THE FUTURE AS WELL! (more on that in the next example)
+P3.on(['Initialized', 'Destroyed'], /E/, data => 
+  console.log("Plugin3 - Event from /E/ matching emitters: ", data)
+)
 
-sessionEmitter.emit('Initialized')
-fileEmitter.emit('Destroyed')
+// Did I say we can use RegEx everywhere?
+// Listen for events matching /ed/ from emtters that match the /E/
+P4.on(/ed/, /E/, data => 
+  console.log("Plugin4 - Event /ed/ from /E/ matching emitters: ", data)
+)
+
+E1.emit('Initialized', 'Emitter1')
+E2.emit('Initialized', 'Emitter1')
+E2.emit('Destroyed', 'Emitter2')
 ```
 
-### TODO:
-    - Add EmitAsync method to event emitter -- Done
-    - Plugins subscribe to plugins -- Done
-    - Check multiple plugins listening for a particular event and throwing an error ( one of them might not be registered ) -- Done
-    - AutoRegister -- Done only for events, not event emitters
+You should see this output:
+```bash
+# Output
 
-    - Production/Development Modes
-    - Execute event handler after another handler finished
-        (ex: Sync plugin chaged state -> Notification plugin kicks in after that to send some stuff)
-    - Adding checks to event executions (i.e, provide function that checks whether event should or should not be executed)
-    - Allow unregistered events to be fired (provide options object for that)
+Plugin1 - Emitter1 : Emitter1
+Plugin2 - All Emitters: Emitter1
+Plugin3 - Event from /E/ matching emitters:  Emitter1
+Plugin4 - Event /ed/ from /E/ matching emitters:  Emitter1
+Plugin2 - All Emitters: Emitter1
+Plugin3 - Event from /E/ matching emitters:  Emitter1
+Plugin4 - Event /ed/ from /E/ matching emitters:  Emitter1
+Plugin3 - Event from /E/ matching emitters:  Emitter2
+Plugin4 - Event /ed/ from /E/ matching emitters:  Emitter2
+```
+
+### Future Events and Emitters
+
+This is where the real fun (in my opinion) comes. Lets model some very simplified, but still real world example.
+Suppose you are doing a e-commerce web-site. Transactions going back and forward, new products are added and deleted and there is
+no sane way to know exactly what events other developers will register. However, you agreed on
+the data interface and the prefixing of those events. Therefore, you have 3 primary areas (again, very simplified) of events:
+`Payment`, `Product`, `Admin`. Each of those can have different emitters and events they emit. For example,
+`Product/Veiwed`, where `Product` is the name of the emitter and `Viewed` is the event.
+
+Here we register event handlers before we even know exactly
+what events will be available in the future
+
+```js
+// src/examples/future.js
+import EPL from 'epluginize'
+
+// configure to AutoRegister plugins as they are constructed
+EPL.Plugin.autoRegister()
+
+// create basic event emitters
+const [ E1, E2 ] = EPL.EventEmitter.mult(['E1', 'E2'])
+
+// create plugins
+// Note: in AutoRegister mode, plugins cannot have 
+// multiple handlers for the same events, that is why we create
+// a couple more plugins to show the whole power of selectors
+const [ P1, P2, P3, P4 ] = EPL.Plugin.mult(['P1', 'P2', 'P3', 'P4'])
+
+// Here we register event handlers before we even know exactly
+// what events will be available in the future
+// 
+// For convenience, this refers to plugin object itself, so you don't
+// need to worry about those
+
+P1.on('*', 'E1', function (data, eventName, emitterName) {
+  console.log(this.name, "Emitter1 :", data, ' | Emitter: ', emitterName, ' | Event:', eventName)
+})
+
+P2.on('Initialized', '*', function(data, eventName, emitterName) {
+  console.log(this.name, "- All Emitters:", data, ' | Emitter: ', emitterName, ' | Event:', eventName)
+})
+
+P3.on(['Initialized', 'Destroyed'], /E/, function(data, eventName, emitterName) {
+  console.log(this.name, "- Event from /E/: ", data, ' | Emitter:', emitterName, ' | Event:', eventName)
+})
+
+P4.on(/ed/, /E/, function(data, eventName, emitterName) {
+  console.log(this.name, "- Event /ed/ from /E/: ", data, ' | Emitter:', emitterName, 'Event:', eventName)
+})
+
+// register events after AFTER event handlers
+E1.registerEvents(['Initialized', 'Destroyed'])
+E2.registerEvents(['Initialized', 'Destroyed'])
+
+// Emit all the events
+E1.emit('Initialized', 'Some Data')
+E2.emit('Initialized', 'Some Other Data')
+E2.emit('Destroyed', 'Without Errors')
+
+```
+
+You should see this output:
+```bash
+# Output
+
+P2 - All Emitters: Some Data  | Emitter:  E1  | Event: Initialized
+P3 - Event from /E/:  Some Data  | Emitter: E1  | Event: Initialized
+P1 Emitter1 : Some Data  | Emitter:  E1  | Event: Initialized
+P4 - Event /ed/ from /E/:  Some Data  | Emitter: E1 Event: Initialized
+P2 - All Emitters: Some Other Data  | Emitter:  E2  | Event: Initialized
+P3 - Event from /E/:  Some Other Data  | Emitter: E2  | Event: Initialized
+P4 - Event /ed/ from /E/:  Some Other Data  | Emitter: E2 Event: Initialized
+P3 - Event from /E/:  Without Errors  | Emitter: E2  | Event: Destroyed
+P4 - Event /ed/ from /E/:  Without Errors  | Emitter: E2 Event: Destroyed
+```
+
+## API Overview
+
+## Notes

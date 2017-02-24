@@ -8,17 +8,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
 var _events = require('events');
 
 var _events2 = _interopRequireDefault(_events);
-
-var _chalk = require('chalk');
-
-var _chalk2 = _interopRequireDefault(_chalk);
 
 var _EventsManager = require('./EventsManager.single');
 
@@ -60,12 +52,15 @@ var EventEmitter = function (_events$EventEmitter) {
     return _this;
   }
 
-  // checks whether a particular event can be fired
-  // by this EventEmitter
+  // Create multiple event emitters at once
 
 
   _createClass(EventEmitter, [{
     key: 'canEmit',
+
+
+    // checks whether a particular event can be fired
+    // by this EventEmitter
     value: function canEmit(title) {
       return !!this.__events__[title];
     }
@@ -115,7 +110,10 @@ var EventEmitter = function (_events$EventEmitter) {
         params[_key] = arguments[_key];
       }
 
-      if (!this.canEmit(params[0])) throw new Error('You cannot emit unregistered event');else _get(EventEmitter.prototype.__proto__ || Object.getPrototypeOf(EventEmitter.prototype), 'emit', this).apply(this, params);
+      if (!this.canEmit(params[0])) throw new Error('You cannot emit unregistered event');
+      // emit the event, setting `eventName` and `emitterName`
+      // as the last two params passed
+      else _get(EventEmitter.prototype.__proto__ || Object.getPrototypeOf(EventEmitter.prototype), 'emit', this).apply(this, params.concat([params[0], this.name]));
     }
 
     // asynchronously emit event
@@ -129,8 +127,20 @@ var EventEmitter = function (_events$EventEmitter) {
         params[_key2] = arguments[_key2];
       }
 
-      if (!this.canEmit(params[0])) throw new Error('You cannot emit unregistered event');else setImmediate(function () {
-        return _get(EventEmitter.prototype.__proto__ || Object.getPrototypeOf(EventEmitter.prototype), 'emit', _this3).apply(_this3, params);
+      if (!this.canEmit(params[0])) throw new Error('You cannot emit unregistered event');
+      // emit the event, setting `eventName` and `emitterName`
+      // as the last two params passed
+      else setImmediate(function () {
+          return _get(EventEmitter.prototype.__proto__ || Object.getPrototypeOf(EventEmitter.prototype), 'emit', _this3).apply(_this3, params.concat([params[0], _this3.name]));
+        });
+    }
+  }], [{
+    key: 'mult',
+    value: function mult(emitterNames) {
+      if (!Array.isArray(emitterNames)) throw new Error('Argument to `EventEmitter.mult` should be an Array');
+
+      return emitterNames.map(function (n) {
+        return new EventEmitter(n);
       });
     }
   }]);

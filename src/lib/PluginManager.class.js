@@ -49,7 +49,6 @@ class PluginManager extends events.EventEmitter {
   }
 
   registerPlugins() {
-    console.log(chalk.green('Registering Plugins ...'), this.plugins.map(p => p.name))
     this.plugins.forEach(plugin => this.registerPlugin(plugin))
     return this
   }
@@ -137,7 +136,7 @@ class PluginManager extends events.EventEmitter {
     if (this.__register_table__.indexOf(hash) > -1) return false
     
     this.__register_table__.push(hash)
-    emitter.on(ename, action.func)
+    emitter.on(ename, action.func.bind(plugin))
     return true
   }
 

@@ -25,6 +25,14 @@ class EventEmitter extends events.EventEmitter {
     this.registerSelf()
   }
 
+  // Create multiple event emitters at once
+  static mult( emitterNames ) {
+    if ( !Array.isArray(emitterNames) )
+      throw new Error('Argument to `EventEmitter.mult` should be an Array')
+
+    return emitterNames.map(n => new EventEmitter(n))
+  }
+
   // checks whether a particular event can be fired
   // by this EventEmitter
   canEmit( title ) {
@@ -63,14 +71,18 @@ class EventEmitter extends events.EventEmitter {
   emit( ...params ) {
     if ( !this.canEmit(params[0]) )
       throw new Error('You cannot emit unregistered event')
-    else super.emit.apply(this, params)
+    // emit the event, setting `eventName` and `emitterName`
+    // as the last two params passed
+    else super.emit.apply(this, params.concat([params[0], this.name]))
   }
 
   // asynchronously emit event
   emitAsync( ...params ) {
     if ( !this.canEmit(params[0]) )
       throw new Error('You cannot emit unregistered event')
-    else setImmediate(() => super.emit.apply(this, params))
+    // emit the event, setting `eventName` and `emitterName`
+    // as the last two params passed
+    else setImmediate(() => super.emit.apply(this, params.concat([params[0], this.name])))
   }
 }
 

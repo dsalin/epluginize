@@ -58,23 +58,26 @@ var Plugin = function (_EventEmitter) {
     return _this;
   }
 
-  /**
-  * Functions that define what actions to register
-  * for what event emitter
-  * 
-  * @param {String} eventType
-  *   Type/Name of the event to register action for
-  *   
-  * @param {Array} emitterFilter
-  *   Filtering array that defines from which event emitters to listen events
-  *   
-  * @param {Function} func
-  *   Action handler
-  */
+  // Create multiple Plugins at once
 
 
   _createClass(Plugin, [{
     key: 'on',
+
+
+    /**
+    * Functions that define what actions to register
+    * for what event emitter
+    * 
+    * @param {String} eventType
+    *   Type/Name of the event to register action for
+    *   
+    * @param {Array} emitterFilter
+    *   Filtering array that defines from which event emitters to listen events
+    *   
+    * @param {Function} func
+    *   Action handler
+    */
     value: function on(eventType, emitterFilter, func) {
       var _this2 = this;
 
@@ -128,6 +131,15 @@ var Plugin = function (_EventEmitter) {
       return this.all(action);
     }
   }], [{
+    key: 'mult',
+    value: function mult(pluginNames) {
+      if (!Array.isArray(pluginNames)) throw new Error('Argument to `Plugin.mult` should be an Array');
+
+      return pluginNames.map(function (n) {
+        return new Plugin(n);
+      });
+    }
+  }, {
     key: 'autoRegister',
     value: function autoRegister() {
       /**
