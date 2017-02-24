@@ -232,6 +232,7 @@ P3.on(['Initialized', 'Destroyed'], /E/, function(data, eventName, emitterName) 
 P4.on(/ed/, /E/, function(data, eventName, emitterName) {
   console.log(this.name, "- Event /ed/ from /E/: ", data, ' | Emitter:', emitterName, 'Event:', eventName)
 })
+```
 
 ```js
 // src/examples/in-separate-files/emitters.js
