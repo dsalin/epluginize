@@ -1,6 +1,6 @@
 {
   "name": "epluginize",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "dist/index.js",
   "description": "Convenient event-based plugin system for NodeJS projects",
   "scripts": {
